@@ -1,4 +1,3 @@
-const Task = require('./task')
 const monggose = require('mongoose')
 const validator = require('validator')
 const bcrypt = require('bcryptjs')
@@ -22,14 +21,21 @@ const userSchema = new monggose.Schema({
             }
         }
     },
-    age: {
+    contact: {
+        type: String,
+        required: true,
+        
+    },
+    hobby: {
+        type: String
+        
+    },
+    skillSet: {
+        type: Array
+    },
+    userRole: {
         type: Number,
-        default: 0,
-        validate(value){
-            if (value < 0) {
-                throw new Error ('Please enter valid Age')
-            }
-        }
+        required: true
     },
     password: {
         type: String,
@@ -53,12 +59,6 @@ const userSchema = new monggose.Schema({
     }
 }, {
     timestamps: true
-})
-
-userSchema.virtual('tasks', {
-    ref: 'Task',
-    localField: '_id',
-    foreignField: 'owner'
 })
 
 userSchema.methods.toJSON = function () {
@@ -109,13 +109,6 @@ userSchema.pre('save', async function (next) {
         user.password = await bcrypt.hash(user.password, 8)
     }
 
-    next()
-})
-
-// Delete user tasks when user is removed
-userSchema.pre('remove', async function (next){
-    const user = this
-    await Task.deleteMany({owner: user._id})
     next()
 })
 
